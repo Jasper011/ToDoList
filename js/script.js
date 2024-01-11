@@ -9,13 +9,11 @@ function setCookie(key, value) {
     const valueStr = JSON.stringify(value);
     const encodedValue = encodeURIComponent(valueStr);
 
-    // const valueKey = JSON.stringify(key);
     const encodedKey = encodeURIComponent(key);
 
     document.cookie = encodedKey + '=' + encodedValue;
 
 }
-// setCookie('about Iliya', human);
 
 //  Напишите функцию, которая принимает ключ (имя кукис) и ВОЗВРАЩАЕТ значение данной кукис
 function getCookie(findedKey) {
@@ -33,104 +31,15 @@ function getCookie(findedKey) {
             return true;
         }
     })
-    // console.log(findedCookie);
     if (!findedCookie) {
         return undefined;
     }
     const splittedCookie = findedCookie.split('=')
     const value = splittedCookie[1];
     const decodedValue = decodeURIComponent(value);
-    // console.log(decodedValue);
     const parsedValue = JSON.parse(decodedValue);
-    // console.log(typeof parsedValue);
     return parsedValue;
 }
-
-
-
-// По нажатию на кнопку "добавить" создаём ЛИ с текстом из инпута и добавляет в UL
-
-// 1. Найти нужные элементы (инпут, кнопка и ul)
-
-// const input = document.querySelector('.toDoInput');
-// const btn = document.querySelector('.toDoBtn');
-// const list = document.querySelector('.toDo');
-
-// let state;
-
-// 2. Добавить слушатель события КЛИК на кнопку
-
-// function createListItem(toDoText) {
-//     const listItem = document.createElement('li');
-//     listItem.innerHTML = toDoText;
-
-//     const delBtn = document.createElement('button');
-//     delBtn.innerHTML = 'Удалить';
-//     delBtn.classList.add('delBtn')
-//     delBtn.addEventListener('click', function () {
-//         listItem.remove();
-//     });
-
-//     listItem.append(delBtn);
-//     list.append(listItem);
-// }
-
-// function refreshCookies(toDoText) {
-//     // state.toDoList = getCookie('toDo');
-//     console.log(state);
-//     state.toDoList.push(toDoText)
-//     setCookie('stateToDo', state);
-//     console.log(state);
-// }
-
-// btn.addEventListener('click', function (event) {
-//     const toDoText = input.value;
-//     createListItem(toDoText);
-//     refreshCookies(toDoText);
-// });
-
-
-
-// 0. Перенести в отдельную функцию или класс
-// 1. Сохранять и удалять дела из кукис:
-// Создать кукис и занести туда пустой массив
-// При нажатии на кнопку создания дела считывать текст из поля и добавлять в массив 
-//  При нажатии текст из поля и добавлять в массив 
-
-
-// - 
-// - 
-// - 
-
-// Как хранить массив в кукис?
-// Как удалять объекты в строке которая кака массив?
-// В какой момент создавтаь стейт? В какой момент отрисовывать список? В какой момнент обновляь стейт?
-
-// 5-8
-// 6-7
-// 2-4
-// 1-2
-
-
-// window.addEventListener('load', function () {
-//     console.log(getCookie('toDo'));
-//     state = getCookie('stateToDo');
-//     if (state && state.toDoList) {
-//         state.toDoList.forEach(function (item) {
-//             console.log(item);
-//             createListItem(item);
-//         })
-//     } else {
-//         state = {
-//             toDoList: [],
-//             name: "Дела Ильи",
-//             lastSaved: new Date()
-//         };
-//     }
-
-// })
-
-// ДЗ - реализовать удаление дел (из ДОМ и из Кукис)
 
 class ToDo {
     // TODO: сделать рефакторинг (подумать над именами функций и переменных, возможно вынести часть кода в отдельые более мелкие функции). Цель рефакторинга - сделать код более читаемым чтобы обсулживание и расширение кода было более простым.
@@ -148,9 +57,6 @@ class ToDo {
             this.toDoList = [];
             setCookie(this.name, this.toDoList);
         }
-        this.editDate = new Date();
-        this.parsedDate = String(this.editDate.getMonth() + 1).padStart(2, '0') + '/' + String(this.editDate.getDate()).padStart(2, '0') + '/' + this.editDate.getFullYear();
-
         this.setEventListeners();
     }
 
@@ -182,20 +88,20 @@ class ToDo {
         setCookie(this.name, this.toDoList);
     }
 
-    // Заполнить список дел (O(n))
     fillToDoList() {
         console.log('Fill TODO list');
         this.toDoListHtml.innerHTML = "";
         const toDoList = this.toDoList;
 
         toDoList.forEach(function (item) {
-            this.createNewElement(item)
+            this.addOneWork(item)
         }.bind(this))
     }
 
-    // Добавить одно дело (O(1))
     addOneWork(workText) {
-        this.createNewElement(workText);
+        const element = this.createNewElement(workText);
+        this.deleteWorkBtn(element);
+        this.appendWorkItem(element);
     }
 
     createNewElement(text) {
@@ -210,16 +116,28 @@ class ToDo {
         const delBtn = document.createElement('button');
         delBtn.innerHTML = 'Удалить';
         delBtn.classList.add('delBtn')
-        // TODO: Доделать удаление событий для тех дел, которые мы удаляем из списка (чтобы слушатели не висели просто так)
+        listItem.append(delBtn);
 
-        delBtn.addEventListener('click', function () {
+        console.log(listItem);
+        return listItem;
+    }
+
+    deleteWorkBtn(listItem){
+        const delBtn = listItem.querySelector('.delBtn')
+
+        delBtn.addEventListener('click', function deleteItem() {
             listItem.remove();
-            const listItemId = this.toDoList.indexOf(listItem.textContent);
+            const content = listItem.querySelector('span').textContent;
+            const listItemId = this.toDoList.indexOf(content);
             this.toDoList.splice(listItemId, 1);
             this.refreshCookies();
+            delBtn.removeEventListener('click', deleteItem);
         }.bind(this));
+        
+        
+    }
 
-        listItem.append(delBtn);
+    appendWorkItem(listItem){
         this.toDoListHtml.append(listItem);
     }
 };
@@ -227,7 +145,6 @@ class ToDo {
 const conf1 = {
     rootSelector: '.ilyaToDo',
     name: 'Ilya',
-    editDate: new Date()
 };
 
 const todo = new ToDo(conf1);
